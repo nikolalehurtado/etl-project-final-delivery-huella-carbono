@@ -6,9 +6,24 @@
 >
 > **Repositorios anteriores (se conservan sin cambios):** [Primera Entrega](https://github.com/dianapanesso/etl-proyecto-huella-carbono) · [Segunda Entrega](https://github.com/nikolalehurtado/etl-project-delivery-2-huella-carbono)
 
-**Contenido:** 1. Descripción y objetivos · 2. Fuentes de datos y EDA · 3. Arquitectura · 4. Pipeline ETL batch · 5. Calidad de datos · 6. Data Warehouse · 7. Dashboard analítico (batch) · 8. Pipeline de streaming · 9. Dashboard en tiempo real · 10. Ejecución y reproducibilidad · 11. Evidencia funcional · 12. Decisiones de ingeniería y limitaciones
+**Contenido:** 
+- [1. Descripción del proyecto y objetivos](#1-descripción-del-proyecto-y-objetivos) — *Sebastián Celorio (Analítica y Negocio)*
+- [2. Fuentes de datos y EDA](#2-fuentes-de-datos-y-eda) — *David Aponte (Calidad de Datos y API)*
+- [3. Arquitectura del sistema](#3-arquitectura-del-sistema) — *Nikol Hurtado (Infraestructura y Orquestación)*
+- [4. Pipeline ETL batch](#4-pipeline-etl-batch) — *Nikol Hurtado (Infraestructura y Orquestación)*
+- [5. Calidad de datos](#5-calidad-de-datos) — *David Aponte (Calidad de Datos y API)*
+- [6. Data Warehouse](#6-data-warehouse) — *Diana Panesso (Transformación y DW)*
+- [7. Dashboard analítico (batch)](#7-dashboard-analítico-batch) — *Sebastián Celorio (Analítica y Negocio)*
+- [8. Pipeline de streaming](#8-pipeline-de-streaming) — *Diana Panesso (Streaming y DW)*
+- [9. Dashboard en tiempo real](#9-dashboard-en-tiempo-real) — *Sebastián Celorio & Diana Panesso*
+- [10. Ejecución y reproducibilidad](#10-ejecución-y-reproducibilidad) — *Nikol Hurtado (Infraestructura y Orquestación)*
+- [11. Evidencia funcional](#11-evidencia-funcional) — *Equipo Completo (Nikol H., David A., Diana P., Sebastián C.)*
+- [12. Decisiones de ingeniería y limitaciones](#12-decisiones-de-ingeniería-y-limitaciones) — *Sebastián Celorio (Analítica y Negocio)*
+- [13. Integrantes y distribución de responsabilidades](#13-integrantes-y-distribución-de-responsabilidades) — *Equipo Completo*
 
 ## 1. Descripción del proyecto y objetivos
+
+> **Responsable:** Sebastián Celorio (Persona 4: Analítica y Negocio)
 
 ### 1.1 Problema y objetivo analítico
 
@@ -83,6 +98,8 @@ La entrega final agrega requisitos de **baja latencia**, pensados para un caso o
 **Cumplimiento de los objetivos.** Cada requisito batch tiene su consulta, su resultado y su visualización (sección 7.2). Los requisitos de streaming se demuestran con la corrida de la sección 11.4: 600 eventos procesados con latencia típica de 8 a 25 ms, 30 alertas de alta huella, 8 eventos inválidos rechazados y recuperación completa después de detener el consumidor.
 
 ## 2. Fuentes de datos y EDA
+
+> **Responsable:** David Aponte (Persona 2: Calidad de Datos y API)
 
 ### 2.1 Fuente primaria y fuente API
 
@@ -215,6 +232,8 @@ La API del IDEAM se usa en **extracción batch periódica** (ventanas de 7 días
 
 ## 3. Arquitectura del sistema
 
+> **Responsable:** Nikol Hurtado (Persona 1: Infraestructura y Orquestación)
+
 ```mermaid
 flowchart TB
   subgraph FUENTES["Fuentes de datos"]
@@ -321,6 +340,8 @@ flowchart TB
 **Proceso de negocio y grano.** El proceso que se modela es la estimación anual de la huella de carbono residencial de un hogar. El grano de la tabla de hechos es **un registro por hogar encuestado** (`DIRECTORIO` + `SECUENCIA_P`, llaves que identifican al hogar).
 
 ## 4. Pipeline ETL batch
+
+> **Responsable:** Nikol Hurtado (Persona 1: Infraestructura y Orquestación)
 
 ### 4.1 Diseño del DAG de Airflow e interfaces de las tareas
 
@@ -448,6 +469,8 @@ La estrategia de integración une los microdatos de la ECV con los datos climát
 
 ## 5. Calidad de datos
 
+> **Responsable:** David Aponte (Persona 2: Calidad de Datos y API)
+
 ### 5.1 Riesgos y reglas de calidad
 
 30 reglas de calidad (DQ01–DQ30) distribuidas en 3 compuertas. Cada umbral tiene base empírica,
@@ -487,6 +510,8 @@ Compuerta 3 implementada en `run_prepared_gate()` (`src/validation.py`). Valida 
 | `dim_combustibles` | `prepared_dim_combustibles_suite` | DQ30 | Surrogate único, factor emisión > 0 |
 
 ## 6. Data Warehouse
+
+> **Responsable:** Diana Panesso (Persona 3: Transformación, DW y Streaming)
 
 ### 6.1 Modelo dimensional refinado y justificación de cambios
 
@@ -645,6 +670,8 @@ El consumidor de Kafka escribe en tres tablas de la misma base (`huella_carbono_
 
 ## 7. Dashboard analítico (batch)
 
+> **Responsable:** Sebastián Celorio (Persona 4: Analítica y Negocio)
+
 ### 7.1 Dashboard y salidas analíticas
 
 El producto analítico es un informe de **Power BI Desktop** (`dashboard/dashboard_huella_carbono.pbix`) conectado al Data Warehouse MySQL (`localhost:3307`, base `huella_carbono_dw_v2`). Importa las seis tablas del esquema estrella con sus relaciones; **no lee CSV, respuestas crudas de la API ni archivos intermedios**. Los pasos de conexión están en [`docs/bi_dashboard_guide.md`](docs/bi_dashboard_guide.md). El [dashboard publicado en Power BI](https://app.powerbi.com/view?r=eyJrIjoiZmVhYWMzZGMtNGI1ZS00N2Q0LWJlMTAtMTYzM2YyMTAwMzAzIiwidCI6IjY5M2NiZWEwLTRlZjktNDI1NC04OTc3LTc2ZTA1Y2I1ZjU1NiIsImMiOjR9) también está disponible en la web.
@@ -728,6 +755,8 @@ La tarjeta "hogares con clima emparejado" (98,3 %) y las visualizaciones de R6 y
 La tabla completa de reglas (DQ01 a DQ30) y los resultados de validación de cada corrida están en [`docs/quality_rules.md`](docs/quality_rules.md) y `gx/validation_results/<run_id>/`.
 
 ## 8. Pipeline de streaming
+
+> **Responsable:** Diana Panesso (Persona 3: Transformación, DW y Streaming)
 
 ### 8.1 Componentes
 
@@ -839,6 +868,8 @@ Sin eventos, escribe una foto cada 5 s para que "eventos en el último minuto" b
 
 ## 9. Dashboard en tiempo real
 
+> **Responsables:** Sebastián Celorio (Persona 4: Analítica y Negocio) & Diana Panesso (Persona 3: Streaming)
+
 ### 9.1 Integración consumidor → dashboard
 
 ```
@@ -881,6 +912,8 @@ productor → Kafka (huella-events) → consumidor → MySQL (tablas stream_*) �
 | Uso | Análisis histórico, comparaciones y conclusiones | Operación: alertas, salud del flujo y seguimiento de indicadores |
 
 ## 10. Ejecución y reproducibilidad
+
+> **Responsable:** Nikol Hurtado (Persona 1: Infraestructura y Orquestación)
 
 ### 10.1 Instrucciones de instalación y ejecución
 
@@ -956,6 +989,8 @@ Requisitos adicionales: Python 3.10 o superior en el equipo (probado con 3.13). 
 | Sin duplicados | `SELECT COUNT(*), COUNT(DISTINCT event_id) FROM stream_events;` | Los dos conteos son iguales |
 
 ## 11. Evidencia funcional
+
+> **Responsables:** Equipo Completo — Subsecciones: **11.1 y 11.3:** Nikol Hurtado · **11.2:** David Aponte · **11.4:** Diana Panesso
 
 ### 11.1 Evidencia de la corrida exitosa (Prueba A)
 
@@ -1219,6 +1254,8 @@ El retraso volvió a 0 en las tres particiones y, al terminar el productor, MySQ
 
 ## 12. Decisiones de ingeniería y limitaciones
 
+> **Responsable:** Sebastián Celorio (Persona 4: Analítica y Negocio)
+
 ### 12.1 Supuestos y limitaciones del batch
 
 - Los kWh de la ECV son estimados desde el pago y la tarifa; no son consumo medido y el pago refleja subsidios.
@@ -1263,11 +1300,73 @@ El retraso volvió a 0 en las tres particiones y, al terminar el productor, MySQ
 - Kafka usa `PLAINTEXT` sin autenticación y Grafana permite ver el dashboard sin iniciar sesión (solo lectura). Es aceptable en un entorno local de demostración; en producción se activarían TLS/SASL en Kafka y se desactivaría el acceso anónimo.
 - El productor publica con `acks=all` y reintentos, y valida cada evento antes de enviarlo.
 
-## Integrantes y responsabilidades
+## 13. Integrantes y distribución de responsabilidades
 
-| Integrante | Rol |
-|---|---|
-| Nikol Hurtado | Persona 1 — Infraestructura y orquestación |
-| David Aponte | Persona 2 — API y calidad de datos |
-| Diana Panesso | Persona 3 — Transformación, integración y modelo |
-| Sebastián Celorio | Persona 4 — Analítica, dashboard y documentación |
+> **Responsables:** Equipo Completo (Nikol Hurtado, David Aponte, Diana Panesso, Sebastián Celorio)
+
+Este proyecto fue desarrollado de manera colaborativa para la **Entrega Final (Fase 3)**, asegurando la integración del Data Warehouse dimensional, la orquestación con Apache Airflow, compuertas de calidad con Great Expectations, analítica de negocio en Power BI y el nuevo pipeline de streaming en tiempo real con Apache Kafka y Grafana.
+
+---
+
+### 13.1 Detalle de roles y entregables
+
+#### 1. Nikol Hurtado (Persona 1: Infraestructura y Orquestación)
+* **Integración de Kafka:** Actualización y configuración de `docker-compose.yaml` para incorporar los servicios de Apache Zookeeper y el broker de Apache Kafka (`confluentinc/cp-kafka`), garantizando su coexistencia y arranque armónico junto con Apache Airflow, PostgreSQL y MySQL.
+* **Refinamiento del DAG:** Optimización del DAG de Airflow (`etl_huella_carbono_dag.py`) asegurando la separación modular y explícita de cada etapa del pipeline (extracción, limpieza, validación de calidad, transformación y carga), documentando dependencias, políticas de reintento (`retries`, `retry_delay`) y manejo de excepciones deterministas vs transitorias.
+* **Gestión del Repositorio y Entorno:** Estructuración del repositorio, definición de dependencias en `requirements.txt` y `requirements-streaming.txt` (confluent-kafka, kafka-python, etc.), y redacción detallada de las instrucciones de despliegue, ejecución y reproducibilidad en Docker.
+* **Secciones del README a cargo:**
+  * [Sección 3. Arquitectura del sistema](#3-arquitectura-del-sistema)
+  * [Sección 4. Pipeline ETL batch](#4-pipeline-etl-batch)
+  * [Sección 10. Ejecución y reproducibilidad](#10-ejecución-y-reproducibilidad)
+  * [Sección 11.1 y 11.3. Evidencia de orquestación y tolerancia a fallos](#11-evidencia-funcional)
+
+#### 2. David Aponte (Persona 2: Calidad de Datos y API)
+* **Cierre de Great Expectations:** Configuración y mantenimiento de las 3 compuertas de calidad (`validate_primary_raw`, `validate_api_raw`, `validate_prepared`), garantizando el bloqueo de cargas ante fallas críticas (`Critical`) y la notificación ante advertencias (`Warning`). Exportación y documentación de la *expectation suite* final y evidencias de validación (Data Docs).
+* **Documentación EDA y Perfilamiento:** Redacción del análisis exploratorio de datos (EDA) sobre la ECV 2025 del DANE y los datos del IDEAM, detallando cómo los hallazgos empíricos (nulos en pago de energía, inconsistencias de estrato, fallas de sensor en estaciones meteorológicas) guiaron las reglas de calidad y decisiones técnicas de imputación.
+* **Justificación e Integración de la API:** Documentación técnica y analítica del endpoint SODA del IDEAM (dataset `sbwg-7ju4`), justificando formalmente el valor agregado frente al dataset estático original al permitir la desagregación climática por piso térmico.
+* **Secciones del README a cargo:**
+  * [Sección 2. Fuentes de datos y EDA](#2-fuentes-de-datos-y-eda)
+  * [Sección 5. Calidad de datos](#5-calidad-de-datos)
+  * [Sección 11.2. Evidencia de la falla controlada (Prueba B)](#112-evidencia-de-la-falla-controlada-prueba-b)
+  * Documentación complementaria: [`docs/quality_rules.md`](docs/quality_rules.md)
+
+#### 3. Diana Panesso (Persona 3: Transformación, DW y Streaming)
+* **Mantenimiento del Data Warehouse Dimensional:** Implementación y validación del modelo estrella en MySQL 8 compuesto por la tabla de hechos `fact_huella_carbono` y sus 5 dimensiones (`dim_hogar`, `dim_ubicacion`, `dim_clima`, `dim_combustibles`, `dim_tarifas`), con cargas transaccionales atómicas (DELETE + INSERT + COMMIT/ROLLBACK) y conciliación estricta de registros.
+* **Productor Kafka (`producer_events.py` / `producer_metrics.py`):** Desarrollo del script productor que se conecta a la base de datos MySQL, calcula y emite eventos bajo un contrato estricto (`event_contract.py`), publicando continuamente métricas agregadas y registros de hogares hacia el tópico `residential_emissions`.
+* **Consumidor Kafka (`consumer_events.py` / `consumer_metrics.py`):** Desarrollo del script consumidor que se suscribe al tópico de Kafka, procesa métricas en tiempo real con bajas latencias (< 30 ms), gestiona alertas de alta huella (percentil 95), enruta mensajes defectuosos a la Dead Letter Queue (DLQ) y persiste el estado en MySQL para el monitoreo.
+* **Secciones del README a cargo:**
+  * [Sección 6. Data Warehouse](#6-data-warehouse)
+  * [Sección 8. Pipeline de streaming](#8-pipeline-de-streaming)
+  * [Sección 11.4. Evidencia funcional del streaming](#114-evidencia-funcional-del-pipeline-de-streaming)
+  * Documentación complementaria: [`docs/supuestos_y_trazabilidad.md`](docs/supuestos_y_trazabilidad.md)
+
+#### 4. Sebastián Celorio (Persona 4: Analítica y Negocio)
+* **Tablero Analítico en Power BI:** Diseño, modelado y construcción del dashboard analítico en Power BI conectado de manera exclusiva al Data Warehouse en MySQL 8 (sin orígenes CSV locales intermedios), respondiendo a los requerimientos y preguntas clave del negocio (KPI R1 a R7).
+* **Matriz de Logro de Objetivos de Negocio:** Elaboración de la matriz integral exigida en la rúbrica (*Business Objectives Achievement*), alineando Objetivo de Negocio, Pregunta Analítica, KPI, Evidencia Cuantitativa en el DW y Decisión Respaldada para cada dimensión del problema.
+* **Documentación Analítica y Estratégica:** Redacción de las conclusiones de negocio, interpretación de patrones de consumo residencial, correlación entre temperatura y huella eléctrica, y síntesis de limitaciones, desafíos y recomendaciones de ingeniería a futuro.
+* **Secciones del README a cargo:**
+  * [Sección 1. Descripción del proyecto y objetivos](#1-descripción-del-proyecto-y-objetivos)
+  * [Sección 7. Dashboard analítico (batch)](#7-dashboard-analítico-batch)
+  * [Sección 9. Dashboard en tiempo real](#9-dashboard-en-tiempo-real)
+  * [Sección 12. Decisiones de ingeniería y limitaciones](#12-decisiones-de-ingeniería-y-limitaciones)
+  * Documentación complementaria: [`docs/bi_dashboard_guide.md`](docs/bi_dashboard_guide.md)
+
+---
+
+### 13.2 Matriz de trazabilidad: Secciones del README vs. Roles
+
+| Sección del README | Título de la Sección | Responsable Principal | Rol / Enfoque |
+|---|---|---|---|
+| **1** | [Descripción del proyecto y objetivos](#1-descripción-del-proyecto-y-objetivos) | **Sebastián Celorio** | Analítica y Negocio (R1–R7, Matriz de Objetivos) |
+| **2** | [Fuentes de datos y EDA](#2-fuentes-de-datos-y-eda) | **David Aponte** | Calidad de Datos y API (DANE ECV, IDEAM SODA, EDA) |
+| **3** | [Arquitectura del sistema](#3-arquitectura-del-sistema) | **Nikol Hurtado** | Infraestructura (Docker, Airflow, Kafka, MySQL) |
+| **4** | [Pipeline ETL batch](#4-pipeline-etl-batch) | **Nikol Hurtado** | Orquestación (DAG Airflow, dependencias, reintentos) |
+| **5** | [Calidad de datos](#5-calidad-de-datos) | **David Aponte** | Calidad de Datos (Great Expectations, compuertas DQ) |
+| **6** | [Data Warehouse](#6-data-warehouse) | **Diana Panesso** | DW & Modelo (Esquema estrella, integridad, transacciones) |
+| **7** | [Dashboard analítico (batch)](#7-dashboard-analítico-batch) | **Sebastián Celorio** | Analítica (Power BI, análisis de KPI R1–R7) |
+| **8** | [Pipeline de streaming](#8-pipeline-de-streaming) | **Diana Panesso** | Streaming (Kafka, productor, consumidor, contratos, DLQ) |
+| **9** | [Dashboard en tiempo real](#9-dashboard-en-tiempo-real) | **Sebastián Celorio** / **Diana Panesso** | Analítica y Streaming (Grafana, métricas en vivo) |
+| **10** | [Ejecución y reproducibilidad](#10-ejecución-y-reproducibilidad) | **Nikol Hurtado** | Infraestructura (Comandos Docker Compose, scripts) |
+| **11** | [Evidencia funcional](#11-evidencia-funcional) | **Equipo Completo** | Pruebas funcionales A, B, C, C-2 y Streaming |
+| **12** | [Decisiones de ingeniería y limitaciones](#12-decisiones-de-ingeniería-y-limitaciones) | **Sebastián Celorio** | Negocio y Arquitectura (Supuestos, limitaciones y lecciones) |
+| **13** | [Integrantes y responsabilidades](#13-integrantes-y-distribución-de-responsabilidades) | **Equipo Completo** | Coordinación y distribución de trabajo de la Entrega Final |
